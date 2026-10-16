@@ -71,7 +71,11 @@ export async function exportFrames(idOrAll, { file, force }) {
         continue;
       }
 
-      const target = files.find((entry) => entry.fileName === frame.fileName) ?? pickFile(files, file);
+      const named = frame.fileName ? files.find((entry) => entry.fileName === frame.fileName) : undefined;
+
+      if (frame.fileName && !named) throw new Error(`${frame.id}: "${frame.fileName}" is not connected. Open it in Figma Desktop and run the plugin.`);
+
+      const target = named ?? pickFile(files, file);
       const { text } = await call("figma_export", { nodeId: frame.nodeId, outDir, fileKey: target.fileKey });
 
       console.log(`${frame.id}:\n${text}`);
