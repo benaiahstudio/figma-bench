@@ -1,0 +1,16 @@
+{
+  "name": "figma-bench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Benchmark harness for Figma-to-code tools: same frames, same brief, independent scoring.",
+  "scripts": {
+    "bench": "node src/cli.mjs",
+    "test": "node --test \"test/*.test.mjs\""
+  },
+  "engines": { "node": ">=22" },
+  "license": "MIT",
+  "dependencies": {
+    "pngjs": "7.0.0"
+  }
+}
