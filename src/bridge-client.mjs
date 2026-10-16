@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 
 const NOT_CONNECTED = "No Figma plugin is connected";
 const SELECTION_LINE = /^- (\S+) "(.*)" (\S+) (\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/;
-const STATUS_LINE = /^- "(.*)" page "(.*)" fileKey (\S+)$/;
+const STATUS_LINE = /^- "(.*?)" page "(.*?)" fileKey (.+)$/;
 
 export function parseSelection(text) {
   return text.split("\n").flatMap((line) => {
