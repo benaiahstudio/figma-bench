@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { withBridge, parseSelection } from "./bridge-client.mjs";
+import { withBridge, parseSelection, parseStatus } from "./bridge-client.mjs";
 import { renderBrief, viewportWidths } from "./brief.mjs";
 import { chromeSnapshot } from "./snapshot.mjs";
 import { loadConfig, MANIFEST_PATH, RESULTS_DIR, ROOT } from "./config.mjs";
@@ -56,6 +56,22 @@ export async function selectFrame(benchId, { file }) {
   });
 }
 
+const FILE_WAIT_MS = 120000;
+
+// Figma plugins in background tabs reconnect slowly, so wait for the specific file rather than the first one.
+async function waitForFile(call, files, fileName) {
+  const deadline = Date.now() + FILE_WAIT_MS;
+  let current = files;
+
+  for (;;) {
+    const found = current.find((entry) => entry.fileName === fileName);
+
+    if (found || Date.now() >= deadline) return found;
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    current = parseStatus((await call("figma_status", {})).text);
+  }
+}
+
 export async function exportFrames(idOrAll, { file, force, node, out }) {
   if (node) return exportNode(node, { file, out });
 
@@ -73,14 +89,22 @@ export async function exportFrames(idOrAll, { file, force, node, out }) {
         continue;
       }
 
-      const named = frame.fileName ? files.find((entry) => entry.fileName === frame.fileName) : undefined;
+      const named = frame.fileName ? await waitForFile(call, files, frame.fileName) : undefined;
 
-      if (frame.fileName && !named) throw new Error(`${frame.id}: "${frame.fileName}" is not connected. Open it in Figma Desktop and run the plugin.`);
+      if (frame.fileName && !named) {
+        console.log(`${frame.id}: "${frame.fileName}" did not connect within ${FILE_WAIT_MS / 1000}s. Open it in Figma Desktop and run the plugin.`);
+        continue;
+      }
 
       const target = named ?? pickFile(files, file);
-      const { text } = await call("figma_export", { nodeId: frame.nodeId, outDir, fileKey: target.fileKey });
 
-      console.log(`${frame.id}:\n${text}`);
+      try {
+        const { text } = await call("figma_export", { nodeId: frame.nodeId, outDir, fileKey: target.fileKey });
+
+        console.log(`${frame.id}:\n${text}`);
+      } catch (error) {
+        console.log(`${frame.id}: ${error.message}`);
+      }
     }
   });
 }
