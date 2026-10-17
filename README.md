@@ -1,8 +1,16 @@
 # figma-bench
 
-A benchmark harness for tools that turn Figma designs into code. It gives every tool the same ten frames, the
+A benchmark harness for tools that turn Figma designs into code. It is part of Benaiah Studio's open-source work, and the tool it was built to test is `figma-to-code` (the sibling repo `figma-to-code`). It gives every tool the same ten frames, the
 same written brief and the same starter project, then measures the result with a scorer that is separate from
 any tool being tested.
+
+## Status
+
+**v0.1.0 beta. Round 1 results are published; the full 10-frame round is in progress.**
+
+Round 1 was a small improvement round: 3 frames, 3 builds each, scoring our own tool only. The numbers are in
+[`results/round1/`](results/round1/README.md), with their caveats. They are early results, not a claim that
+any tool is the best.
 
 ## What it measures, and why
 
@@ -35,7 +43,7 @@ The scorer deliberately does not reuse the thresholds or pass/fail logic of the 
 
 - Node 22 or newer and npm.
 - Figma Desktop with the bridge plugin running (only for `list-frames`, `select` and `export`).
-- The bridge server and the rendering helper from the Figma-to-code toolkit (see Configuration).
+- The `figma-to-code` repo cloned next to this one (so you have `../figma-to-code`), with its bridge built (`npm install && npm run build` in `bridge/`) and its toolkit installed (`npm install` in `toolkit/`). See Configuration if it lives elsewhere.
 - `chrome-devtools-mcp` installed globally: `npm i -g chrome-devtools-mcp@1.10.1`.
 - Python 3 only if you want the optional CLIP score.
 
@@ -46,12 +54,12 @@ npm test
 
 ## Configuration
 
-Everything machine-specific comes from environment variables. Nothing is hard-coded.
+Everything machine-specific comes from environment variables. The defaults assume `figma-to-code` sits next to this folder.
 
 | Variable | Meaning | Default |
 | --- | --- | --- |
-| `FIGMA_BRIDGE_SERVER` | Compiled bridge MCP server entry point (`index.js`) | `~/cc-figma-bridge/dist/server/index.js` |
-| `FIGMA_TOOLKIT_DIR` | Folder containing `figma-render.mjs` | `~/.claude/scripts/figma` |
+| `FIGMA_BRIDGE_SERVER` | Compiled bridge MCP server entry point (`index.js`) | `../figma-to-code/bridge/dist/server/index.js` |
+| `FIGMA_TOOLKIT_DIR` | Folder containing `figma-render.mjs` | `../figma-to-code/toolkit` |
 | `BENCH_PYTHON` | Python for the optional CLIP score | `python` on Windows, `python3` elsewhere |
 | `BENCH_EXPECTED_RUNS` | Runs per frame and tool that count as complete | `3` |
 
@@ -122,6 +130,15 @@ npm run bench -- report
 (ViT-B/32, on the CPU). It is optional because the first run downloads the model (about 350 MB). To use it:
 `pip install -r scripts/requirements-clip.txt`, then add `--clip`.
 
+## How to reproduce round 1
+
+1. Clone this repo and `figma-to-code` side by side, and set both up as described above.
+2. Open the Community files for `mobile`, `ecommerce` and `data-table` (links in `NOTICE.md`) in Figma Desktop and run the `figma-to-code` plugin.
+3. For each frame: `npm run bench -- export <benchId>`, then `prepare`, build the page with your tool, `render` and `score` (see Commands).
+4. `npm run bench -- report` rebuilds the tables.
+
+Your numbers will differ a little: builders are language models, and the toolkit has moved on since round 1.
+
 ## Fairness rules
 
 - Every tool gets the same brief (`template/BRIEF.md`), the same frame and the same framework: Vite, React,
@@ -145,7 +162,7 @@ There is no tool list to edit. A tool is just a name (lowercase letters, digits,
 3. `render`, then `score`. The new tool appears as a new column in the report.
 
 The tool named `ours` gets one extra paragraph in its brief pointing at the Figma export folder and the
-`cc-figma-to-code` skill. Any other name gets the paste-your-code paragraph.
+`figma-to-code` skill. Any other name gets the paste-your-code paragraph.
 
 ## What the scorer can and cannot see
 
@@ -164,7 +181,7 @@ src/score/            independent scorer
 template/             starter app and the fixed brief
 scripts/              optional CLIP scorer
 test/                 node --test suite
-results/              score files and RESULTS.md
+results/              score files and RESULTS.md (results/round1/ holds the published round 1 scores)
 .scratch/runs/        exports, apps and renders (git-ignored)
 ```
 

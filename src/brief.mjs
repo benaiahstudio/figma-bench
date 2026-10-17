@@ -10,7 +10,7 @@ function toolSection(tool, figmaPath) {
     return [
       "## Tool: ours",
       "",
-      "Use the `cc-figma-to-code` skill. The Figma export is already done (frozen, read-only); read it from:",
+      "Use the `figma-to-code` skill. The Figma export is already done (frozen, read-only); read it from:",
       "",
       `    ${figmaPath}`,
       "",

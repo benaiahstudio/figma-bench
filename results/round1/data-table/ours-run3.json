@@ -1,0 +1,356 @@
+{
+  "benchId": "data-table",
+  "tool": "ours",
+  "run": 3,
+  "scoredAt": "2026-10-17T08:30:28.302Z",
+  "visual": {
+    "referenceSize": [
+      3126,
+      1840
+    ],
+    "renderSize": [
+      3126,
+      1840
+    ],
+    "sizeMismatch": false,
+    "ssim": 0.9699297996075398,
+    "lumaCorrelation16": 0.9993612620294757,
+    "lumaCorrelation64": 0.9989894800071153
+  },
+  "design2code": {
+    "designBlocks": 123,
+    "renderBlocks": 123,
+    "matched": 123,
+    "textDice": 1,
+    "blockMatch": 1,
+    "positionDistance": 0.0007135895518961139,
+    "colourDeltaE": 0
+  },
+  "responsive": {
+    "narrow": {
+      "viewportWidth": 1172,
+      "scrollWidth": 1172,
+      "overflows": false,
+      "overflowPx": 0,
+      "textBlocks": 123,
+      "clippedText": 32,
+      "clippedOffenders": [
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 62,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 62,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 122,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 122,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 182,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 182,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 242,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 242,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 302,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 302,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 362,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 362,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 422,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 422,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 482,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 482,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 542,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 542,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 602,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 602,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 662,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 662,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 722,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 722,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 782,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 782,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 842,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 842,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 902,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 902,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 875,
+            "y": 962,
+            "w": 125,
+            "h": 17
+          }
+        },
+        {
+          "text": "Miami development",
+          "box": {
+            "x": 1002,
+            "y": 962,
+            "w": 125,
+            "h": 17
+          }
+        }
+      ],
+      "clippedInScroller": 0,
+      "overlappingText": 0,
+      "overlapOffenders": [],
+      "overlappingInScroller": 0
+    },
+    "wide": {
+      "viewportWidth": 2345,
+      "scrollWidth": 2345,
+      "overflows": false,
+      "overflowPx": 0,
+      "textBlocks": 123,
+      "clippedText": 0,
+      "clippedOffenders": [],
+      "clippedInScroller": 0,
+      "overlappingText": 0,
+      "overlapOffenders": [],
+      "overlappingInScroller": 0
+    }
+  },
+  "maintainability": {
+    "files": 2,
+    "loc": 220,
+    "components": 7,
+    "hardCodedColours": 0,
+    "arbitraryValues": 1,
+    "arbitraryColours": 0,
+    "variableUses": 2,
+    "tokenDefinitions": 25
+  }
+}

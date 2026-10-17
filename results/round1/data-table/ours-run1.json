@@ -1,0 +1,59 @@
+{
+  "benchId": "data-table",
+  "tool": "ours",
+  "run": 1,
+  "scoredAt": "2026-10-17T07:57:53.778Z",
+  "visual": {
+    "referenceSize": [
+      3126,
+      1840
+    ],
+    "renderSize": [
+      3126,
+      1840
+    ],
+    "sizeMismatch": false,
+    "ssim": 0.9717440340191009,
+    "lumaCorrelation16": 0.9984153636116715,
+    "lumaCorrelation64": 0.9981367430076068
+  },
+  "design2code": {
+    "designBlocks": 123,
+    "renderBlocks": 123,
+    "matched": 123,
+    "textDice": 1,
+    "blockMatch": 1,
+    "positionDistance": 0.000648820237284069,
+    "colourDeltaE": 0
+  },
+  "responsive": {
+    "narrow": {
+      "viewportWidth": 1172,
+      "scrollWidth": 1172,
+      "overflows": false,
+      "overflowPx": 0,
+      "textBlocks": 71,
+      "clippedText": 0,
+      "overlappingText": 0
+    },
+    "wide": {
+      "viewportWidth": 2345,
+      "scrollWidth": 2345,
+      "overflows": false,
+      "overflowPx": 0,
+      "textBlocks": 123,
+      "clippedText": 0,
+      "overlappingText": 0
+    }
+  },
+  "maintainability": {
+    "files": 3,
+    "loc": 224,
+    "components": 7,
+    "hardCodedColours": 3,
+    "arbitraryValues": 20,
+    "arbitraryColours": 1,
+    "variableUses": 1,
+    "tokenDefinitions": 19
+  }
+}

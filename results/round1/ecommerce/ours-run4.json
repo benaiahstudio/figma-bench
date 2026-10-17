@@ -1,0 +1,59 @@
+{
+  "benchId": "ecommerce",
+  "tool": "ours",
+  "run": 4,
+  "scoredAt": "2026-10-17T08:03:21.316Z",
+  "visual": {
+    "referenceSize": [
+      2880,
+      5940
+    ],
+    "renderSize": [
+      2880,
+      5940
+    ],
+    "sizeMismatch": false,
+    "ssim": 0.950542532902888,
+    "lumaCorrelation16": 0.9999809833558541,
+    "lumaCorrelation64": 0.99983252965313
+  },
+  "design2code": {
+    "designBlocks": 74,
+    "renderBlocks": 72,
+    "matched": 72,
+    "textDice": 0.998194789939193,
+    "blockMatch": 0.9922859441753877,
+    "positionDistance": 0.0015082956459316456,
+    "colourDeltaE": 0
+  },
+  "responsive": {
+    "narrow": {
+      "viewportWidth": 1080,
+      "scrollWidth": 1080,
+      "overflows": false,
+      "overflowPx": 0,
+      "textBlocks": 72,
+      "clippedText": 0,
+      "overlappingText": 0
+    },
+    "wide": {
+      "viewportWidth": 2160,
+      "scrollWidth": 2160,
+      "overflows": false,
+      "overflowPx": 0,
+      "textBlocks": 72,
+      "clippedText": 0,
+      "overlappingText": 0
+    }
+  },
+  "maintainability": {
+    "files": 2,
+    "loc": 220,
+    "components": 9,
+    "hardCodedColours": 0,
+    "arbitraryValues": 48,
+    "arbitraryColours": 0,
+    "variableUses": 2,
+    "tokenDefinitions": 9
+  }
+}

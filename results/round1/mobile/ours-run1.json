@@ -1,0 +1,59 @@
+{
+  "benchId": "mobile",
+  "tool": "ours",
+  "run": 1,
+  "scoredAt": "2026-10-16T21:58:46.677Z",
+  "visual": {
+    "referenceSize": [
+      780,
+      1688
+    ],
+    "renderSize": [
+      780,
+      1688
+    ],
+    "sizeMismatch": false,
+    "ssim": 0.9712418154835133,
+    "lumaCorrelation16": 0.9997417695053452,
+    "lumaCorrelation64": 0.9987795053428047
+  },
+  "design2code": {
+    "designBlocks": 25,
+    "renderBlocks": 24,
+    "matched": 24,
+    "textDice": 1,
+    "blockMatch": 0.9437252188076056,
+    "positionDistance": 0.0024395267476472397,
+    "colourDeltaE": 0
+  },
+  "responsive": {
+    "narrow": {
+      "viewportWidth": 320,
+      "scrollWidth": 320,
+      "overflows": false,
+      "overflowPx": 0,
+      "textBlocks": 24,
+      "clippedText": 2,
+      "overlappingText": 0
+    },
+    "wide": {
+      "viewportWidth": 585,
+      "scrollWidth": 585,
+      "overflows": false,
+      "overflowPx": 0,
+      "textBlocks": 24,
+      "clippedText": 0,
+      "overlappingText": 0
+    }
+  },
+  "maintainability": {
+    "files": 2,
+    "loc": 120,
+    "components": 4,
+    "hardCodedColours": 1,
+    "arbitraryValues": 44,
+    "arbitraryColours": 0,
+    "variableUses": 2,
+    "tokenDefinitions": 7
+  }
+}
