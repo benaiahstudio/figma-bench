@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { detectErrorPage, openChrome, openPageId, parseCliJson } from "../src/chrome.mjs";
+import { START_ARGS, detectErrorPage, openChrome, openPageId, parseCliJson } from "../src/chrome.mjs";
 
 const pagesReply = (id) => JSON.stringify({ pages: [{ id, selected: true }] });
 
@@ -63,4 +63,9 @@ test("browser error pages are detected", () => {
   assert.match(detectErrorPage({ title: "127.0.0.1", text: "This site can't be reached\n127.0.0.1 refused to connect.\nERR_CONNECTION_REFUSED" }), /Chrome error page/);
   assert.match(detectErrorPage({ text: "ERR_CONNECTION_REFUSED" }), /ERR_CONNECTION_REFUSED/);
   assert.equal(detectErrorPage({ href: "http://127.0.0.1:4000/", title: "Shop", text: "Welcome to the shop" }), null);
+});
+
+test("the browser session starts with an isolated profile", () => {
+  assert.ok(START_ARGS.includes("--isolated"));
+  assert.equal(START_ARGS[0], "start");
 });

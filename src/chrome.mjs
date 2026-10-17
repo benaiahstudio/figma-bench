@@ -60,6 +60,9 @@ export function detectErrorPage({ href = "", title = "", text = "" }) {
   return known ? `Chrome error page ("${known[0]}")` : null;
 }
 
+// A private profile per session: the shared default profile is locked while any other Chrome run is open.
+export const START_ARGS = ["start", "--isolated", "--no-usage-statistics", "--no-performance-crux"];
+
 // Headless Chrome through the chrome-devtools-mcp command line (same approach as the render helper).
 export function openChrome({ width, height, dpr = 1, cli: injected, sleep }) {
   let cliPath;
@@ -81,6 +84,14 @@ export function openChrome({ width, height, dpr = 1, cli: injected, sleep }) {
         maxBuffer: 64 * 1024 * 1024,
         stdio: ["ignore", "pipe", "pipe"],
       }));
+  if (!injected) {
+    try {
+      execFileSync(process.execPath, [cliPath, "--sessionId", sessionId, ...START_ARGS], { stdio: "ignore" });
+    } catch {
+      // The first command starts the daemon anyway; openPageId retries cover a failed start.
+    }
+  }
+
   const pageId = openPageId(cli, { sleep });
 
   cli(["emulate", pageId, "--viewport", `${width}x${height}x${dpr}`]);
