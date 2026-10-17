@@ -83,7 +83,7 @@ async function waitForPlugin(call, { connectTimeoutMs, pollMs }) {
 }
 
 // Starts the bridge server with cwd = cwd, waits for the Figma plugin, runs fn(client), then stops the server.
-export async function withBridge({ serverPath, cwd, connectTimeoutMs = 30000, pollMs = 1000, callTimeoutMs = 180000 }, fn) {
+export async function withBridge({ serverPath, cwd, connectTimeoutMs = 30000, pollMs = 1000, callTimeoutMs = 620000 }, fn) {
   if (!existsSync(serverPath)) throw new Error(`Bridge server not found at ${serverPath}. Set FIGMA_BRIDGE_SERVER to its compiled index.js.`);
 
   const child = spawn(process.execPath, [serverPath], { cwd, stdio: ["pipe", "pipe", "inherit"] });
