@@ -1,15 +1,15 @@
-import { execFileSync, spawn } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { createServer } from "node:net";
-import { join } from "node:path";
+import { execFileSync } from "node:child_process";
+import { cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { withBridge, parseSelection } from "./bridge-client.mjs";
 import { renderBrief, viewportWidths } from "./brief.mjs";
 import { chromeSnapshot } from "./snapshot.mjs";
-import { loadConfig, MANIFEST_PATH, RESERVED_PORT, RESULTS_DIR, ROOT } from "./config.mjs";
+import { loadConfig, MANIFEST_PATH, RESULTS_DIR, ROOT } from "./config.mjs";
 import { findFrame, loadManifest, pickFrames, saveManifest } from "./manifest.mjs";
-import { appDir, checkTool, figmaDir, parseRun, renderDir } from "./paths.mjs";
+import { appDir, briefPath, checkTool, figmaDir, parseRun, renderDir, workDir } from "./paths.mjs";
+import { withPreview } from "./preview.mjs";
 import { loadResults, renderReport } from "./report.mjs";
-import { listRenderedRuns } from "./runs.mjs";
+import { capturedWidths, listRenderedRuns, newestMtime } from "./runs.mjs";
 import { scoreRun } from "./score/index.mjs";
 
 const config = loadConfig();
@@ -56,7 +56,9 @@ export async function selectFrame(benchId, { file }) {
   });
 }
 
-export async function exportFrames(idOrAll, { file, force }) {
+export async function exportFrames(idOrAll, { file, force, node, out }) {
+  if (node) return exportNode(node, { file, out });
+
   const frames = pickFrames(loadManifest(), idOrAll);
   const missing = frames.filter((frame) => frame.nodeId === null);
 
@@ -83,6 +85,32 @@ export async function exportFrames(idOrAll, { file, force }) {
   });
 }
 
+// Exports any node by id without touching the manifest. Output goes to .scratch/exports/<id> unless --out is given.
+async function exportNode(nodeId, { file, out }) {
+  const outDir = out ? resolve(out) : join(ROOT, ".scratch", "exports", nodeId.replace(/[^\w-]+/g, "_"));
+
+  await withBridge(bridgeOptions(), async ({ call, files }) => {
+    const target = pickFile(files, file);
+    const { text } = await call("figma_export", { nodeId, outDir, fileKey: target.fileKey });
+
+    console.log(`${nodeId} from "${target.fileName}" -> ${outDir}\n${text}`);
+  });
+}
+
+export async function outline({ file }) {
+  await withBridge(bridgeOptions(), async ({ call, files }) => {
+    if (files.length === 0) throw new Error("The plugin reports no open file.");
+
+    const targets = file || files.length === 1 ? [pickFile(files, file)] : files;
+
+    for (const target of targets) {
+      const { text } = await call("figma_outline", { fileKey: target.fileKey });
+
+      console.log(`File "${target.fileName}"\n${text}\n`);
+    }
+  });
+}
+
 export function prepareApp(benchId, tool, runValue) {
   const frame = findFrame(loadManifest(), benchId);
   const run = parseRun(runValue);
@@ -93,65 +121,37 @@ export function prepareApp(benchId, tool, runValue) {
   if (!existsSync(join(figma, "screenshot@2x.png"))) throw new Error(`No export for ${benchId}. Run "export ${benchId}" first.`);
 
   const app = appDir(benchId, tool, run);
+  const work = workDir(benchId, tool, run);
 
   if (existsSync(join(app, "src"))) throw new Error(`${app} already exists. Delete it first to start the run again.`);
   cpSync(join(ROOT, "template", "app"), app, { recursive: true });
   mkdirSync(join(app, "reference"), { recursive: true });
+  mkdirSync(work, { recursive: true });
   cpSync(join(figma, "screenshot@2x.png"), join(app, "reference", "screenshot@2x.png"));
   if (existsSync(join(figma, "assets"))) cpSync(join(figma, "assets"), join(app, "public", "assets"), { recursive: true });
 
   const template = readFileSync(join(ROOT, "template", "BRIEF.md"), "utf8");
+  const brief = briefPath(benchId, tool, run);
 
-  writeFileSync(join(app, "BRIEF.md"), renderBrief(template, { frame, tool, figmaPath: figma }));
-  console.log(`Prepared ${app}\nBrief: ${join(app, "BRIEF.md")}`);
+  writeFileSync(brief, renderBrief(template, { frame, tool, figmaPath: figma, workPath: work }));
+  console.log(`Prepared ${app}\nBrief: ${brief}\nWork folder: ${work}`);
 }
 
-function freePort() {
-  return new Promise((resolve, reject) => {
-    const server = createServer();
-
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const { port } = server.address();
-
-      server.close(() => (port === RESERVED_PORT ? resolve(freePort()) : resolve(port)));
-    });
-  });
-}
-
-async function waitForUrl(url, timeoutMs = 30000) {
-  const deadline = Date.now() + timeoutMs;
-
-  while (Date.now() < deadline) {
+// Runs fn, retrying on failure (the render helper fails now and then).
+function withRetries(label, fn, tries = 3) {
+  for (let attempt = 1; ; attempt++) {
     try {
-      if ((await fetch(url)).ok) return;
-    } catch {
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      return fn();
+    } catch (error) {
+      if (attempt >= tries) throw error;
+      console.error(`${label} failed (try ${attempt}/${tries}): ${error.message.split("\n")[0]}`);
     }
   }
-  throw new Error(`Preview server did not answer at ${url}.`);
 }
 
-const npm = (args, cwd) => execFileSync("npm", args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
-
-async function withPreview(app, fn) {
-  const vite = join(app, "node_modules", "vite", "bin", "vite.js");
-
-  if (!existsSync(vite)) npm(["install", "--no-audit", "--no-fund"], app);
-  execFileSync(process.execPath, [vite, "build"], { cwd: app, stdio: "inherit" });
-
-  const port = await freePort();
-  const server = spawn(process.execPath, [vite, "preview", "--port", String(port), "--strictPort", "--host", "127.0.0.1"], { cwd: app, stdio: "ignore" });
-
-  try {
-    const url = `http://127.0.0.1:${port}/`;
-
-    await waitForUrl(url);
-
-    return await fn(url);
-  } finally {
-    server.kill();
-  }
+function writeAtomic(path, text) {
+  writeFileSync(`${path}.tmp`, text);
+  renameSync(`${path}.tmp`, path);
 }
 
 export async function renderApp(benchId, tool, runValue) {
@@ -166,16 +166,28 @@ export async function renderApp(benchId, tool, runValue) {
   mkdirSync(out, { recursive: true });
 
   const widths = viewportWidths(frame.width);
+  const finished = existsSync(join(out, "meta.json"));
+  // A finished render is redone from scratch; an unfinished one resumes with the widths it already captured.
+  const skip = finished ? [] : capturedWidths(out, Object.keys(widths), newestMtime(join(app, "src")));
+
+  if (finished) rmSync(join(out, "meta.json"));
+  if (skip.length > 0) console.log(`Resuming: already captured ${skip.join(", ")}.`);
 
   await withPreview(app, async (url) => {
     for (const [name, width] of Object.entries(widths)) {
-      const png = join(out, `${name}.png`);
+      if (skip.includes(name)) continue;
 
-      execFileSync(process.execPath, [script, url, "--width", String(width), "--height", String(frame.height), "--dpr", "2", "--out", png], { stdio: "inherit" });
-      writeFileSync(join(out, `dom-${name}.json`), JSON.stringify(chromeSnapshot(url, width, frame.height)));
+      const png = join(out, `${name}.png`);
+      const partial = join(out, `${name}.part.png`);
+      // The snapshot goes first so a Chrome error page aborts before any screenshot is kept.
+      const snapshot = chromeSnapshot(url, width, frame.height);
+
+      withRetries(`render ${name}`, () => execFileSync(process.execPath, [script, url, "--width", String(width), "--height", String(frame.height), "--dpr", "2", "--out", partial], { stdio: "inherit" }));
+      renameSync(partial, png);
+      writeAtomic(join(out, `dom-${name}.json`), JSON.stringify(snapshot));
     }
   });
-  writeFileSync(join(out, "meta.json"), `${JSON.stringify({ widths, height: frame.height, dpr: 2 }, null, 2)}\n`);
+  writeAtomic(join(out, "meta.json"), `${JSON.stringify({ widths, height: frame.height, dpr: 2 }, null, 2)}\n`);
   console.log(`Rendered ${benchId}/${tool}/run${run} at ${JSON.stringify(widths)} into ${out}`);
 }
 

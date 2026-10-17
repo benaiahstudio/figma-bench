@@ -10,11 +10,12 @@ function toolSection(tool, figmaPath) {
     return [
       "## Tool: ours",
       "",
-      "Use the `cc-figma-to-code` skill. The Figma export is already done; read it from:",
+      "Use the `cc-figma-to-code` skill. The Figma export is already done (frozen, read-only); read it from:",
       "",
       `    ${figmaPath}`,
       "",
       "It holds design.json, variables.json, styles.json, figma-css.json, screenshot@2x.png and assets/.",
+      "Write the spec, tokens and any renders to `work/` (never into the export folder).",
     ].join("\n");
   }
 
@@ -22,12 +23,12 @@ function toolSection(tool, figmaPath) {
     `## Tool: ${tool}`,
     "",
     "Generate the code with this tool from the same Figma frame, then paste its exported code into this app:",
-    "the page goes in `src/Page.tsx`, any other files under `src/`. Edit by hand only what is needed to make it build,",
-    "and write each manual edit in `NOTES.md`.",
+    "the page goes in `app/src/Page.tsx`, any other files under `app/src/`. Edit by hand only what is needed to make it build,",
+    "and write each manual edit in `work/NOTES.md`.",
   ].join("\n");
 }
 
-export function renderBrief(template, { frame, tool, figmaPath }) {
+export function renderBrief(template, { frame, tool, figmaPath, workPath }) {
   const widths = viewportWidths(frame.width);
   const values = {
     TITLE: frame.title,
@@ -35,6 +36,8 @@ export function renderBrief(template, { frame, tool, figmaPath }) {
     HEIGHT: frame.height,
     NARROW: widths.narrow,
     WIDE: widths.wide,
+    FIGMA: figmaPath,
+    WORK: workPath,
     TOOL_SECTION: toolSection(tool, figmaPath),
   };
 

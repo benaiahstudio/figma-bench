@@ -20,5 +20,7 @@ export function checkTool(tool) {
 export const figmaDir = (benchId) => join(RUNS_DIR, benchId, "figma");
 export const runDir = (benchId, tool, run) => join(RUNS_DIR, benchId, tool, `run${run}`);
 export const appDir = (benchId, tool, run) => join(runDir(benchId, tool, run), "app");
+export const workDir = (benchId, tool, run) => join(runDir(benchId, tool, run), "work");
+export const briefPath = (benchId, tool, run) => join(runDir(benchId, tool, run), "BRIEF.md");
 export const renderDir = (benchId, tool, run) => join(runDir(benchId, tool, run), "render");
 export const resultPath = (benchId, tool, run) => join(RESULTS_DIR, benchId, `${tool}-run${run}.json`);

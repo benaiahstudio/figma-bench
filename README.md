@@ -72,19 +72,33 @@ Run each as `npm run bench -- <command>`.
    frames on this page" call, so select the frames first (Ctrl+A on the page selects all top-level frames).
 2. `select <benchId>`: select exactly one frame in Figma, then run this. It writes the node id, size and file
    name into `data/benchmark.json`. Do this once per frame.
+   `outline [--file <name>]` lists every page and its top-level frames (id, name, size) through the bridge, so you
+   can pick a node id without selecting anything in Figma.
 3. `export <benchId|all>`: exports the frozen reference into `.scratch/runs/<benchId>/figma/` (screenshot,
    `design.json`, variables, styles, assets). It will not overwrite an existing export unless you pass `--force`.
+   `export --node <id> --file <name> [--out <dir>]` exports any node without touching the manifest, into
+   `.scratch/exports/<id>/` by default.
 4. `prepare <benchId> <tool> <run#>`: creates `.scratch/runs/<benchId>/<tool>/run<N>/app`, a Vite + React +
-   TypeScript + Tailwind v4 project with an empty `src/Page.tsx`, the reference screenshot, the assets, and
-   `BRIEF.md`. The tool or agent works inside that `app` folder.
+   TypeScript + Tailwind v4 project with an empty `src/Page.tsx`, the reference screenshot and the assets. Next to
+   `app/` it writes `run<N>/BRIEF.md` and an empty `run<N>/work/` folder for specs, tokens and renders. The frozen
+   export stays read-only; code goes in `app/`, everything else in `work/`.
 5. `render <benchId> <tool> <run#>`: installs dependencies if needed, builds, serves with `vite preview` on a
-   free port (never 5199), and renders at the frame size (device pixel ratio 2), a narrow width (x0.75, at least
-   320) and a wide width (x1.5). It also saves the page's text blocks and width figures as `dom-*.json`.
-6. `score <benchId|all> [tool] [--run N] [--clip]`: scores every rendered attempt and writes
-   `results/<benchId>/<tool>-run<N>.json`.
+   free port (never 5199, bound to 127.0.0.1), and renders at the frame size (device pixel ratio 2), a narrow width (x0.75, at least
+   320) and a wide width (x1.5). It also saves the page's text blocks and width figures as `dom-*.json`. The server is always stopped afterwards (the
+   whole process tree), so nothing is left running. If Chrome shows its own error page (for example "refused to
+   connect") the render stops with an error instead of producing a score. Chrome start-up is retried, and a render
+   that stopped half way resumes with the widths it already captured; `meta.json` is written last, so only
+   complete renders get scored. Re-running a finished render redoes all widths.
+6. `score <benchId|all> [tool] [run#] [--clip]`: scores every rendered attempt and writes
+   `results/<benchId>/<tool>-run<N>.json`. npm swallows `--run`, so pass the run number as a plain third argument:
+   `npm run bench -- score ecommerce ours 3` (`run=3` and `--run=3` also work). Run numbers can be anything
+   (2, 3, 4 after a failed run 1); folders without a finished render are ignored. The responsive section lists
+   each clipped or overlapping text block (snippet and box). Text inside a horizontal scroller
+   (`overflow-x: auto/scroll`) is counted apart as `clippedInScroller` and is not a defect.
 7. `report`: writes `results/RESULTS.md`. One table per metric, rows are frames, columns are tools, cells are
    mean ± standard deviation over runs, plus an Overall row. Anything with fewer runs or frames than expected
-   is marked "partial".
+   is marked "partial". It also lists the run numbers found. Arbitrary Tailwind values, CSS variables defined and
+   CSS variable uses are shown as plain information, not as good or bad: pixel-exact Tailwind needs arbitrary values.
 
 ### Running frame 1 (landing)
 

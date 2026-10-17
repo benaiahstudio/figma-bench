@@ -14,7 +14,9 @@ export const METRICS = [
   { key: "clippedText", label: "Clipped text blocks, narrow + wide (lower is better)", digits: 0, read: (r) => r.responsive.narrow.clippedText + r.responsive.wide.clippedText },
   { key: "overlappingText", label: "Overlapping text pairs, narrow + wide (lower is better)", digits: 0, read: (r) => r.responsive.narrow.overlappingText + r.responsive.wide.overlappingText },
   { key: "hardCodedColours", label: "Hard-coded colours in source (lower is better)", digits: 0, read: (r) => r.maintainability.hardCodedColours },
-  { key: "arbitraryValues", label: "Arbitrary Tailwind values in source (lower is better)", digits: 0, read: (r) => r.maintainability.arbitraryValues },
+  { key: "arbitraryValues", label: "Arbitrary Tailwind values in source (informational)", digits: 0, read: (r) => r.maintainability.arbitraryValues },
+  { key: "tokenDefinitions", label: "CSS variables defined (informational)", digits: 0, read: (r) => r.maintainability.tokenDefinitions },
+  { key: "variableUses", label: "CSS variable uses in source (informational)", digits: 0, read: (r) => r.maintainability.variableUses },
   { key: "components", label: "Components", digits: 0, read: (r) => r.maintainability.components },
   { key: "loc", label: "Lines of code", digits: 0, read: (r) => r.maintainability.loc },
 ];
@@ -95,11 +97,28 @@ export function orderTools(results) {
   return tools.includes("ours") ? ["ours", ...tools.filter((tool) => tool !== "ours")] : tools;
 }
 
+// One line per frame and tool listing the run numbers that have a score (any numbers, not just 1..3).
+export function runsFound(results) {
+  const found = new Map();
+
+  for (const result of results) {
+    const key = `${result.benchId}|${result.tool}`;
+
+    found.set(key, [...(found.get(key) ?? []), result.run]);
+  }
+
+  return [...found].sort(([a], [b]) => a.localeCompare(b)).map(([key, runs]) => `- ${key.replace("|", " / ")}: run ${runs.sort((a, b) => a - b).join(", ")}`);
+}
+
 // Cells are mean ± sample standard deviation over runs. The Overall row is mean ± spread over the frame means.
 export function renderReport({ frameIds, results, expectedRuns }) {
   const cells = aggregate(results);
   const tools = orderTools(results);
-  const lines = ["# Results", "", `Cells show mean ± standard deviation over runs (expected ${expectedRuns} per frame and tool). "partial" means fewer runs or frames than expected. These are raw measurements, not pass or fail.`, ""];
+  const lines = ["# Results", "", `Cells show mean ± standard deviation over runs (expected ${expectedRuns} per frame and tool). "partial" means fewer runs or frames than expected. These are raw measurements, not pass or fail. Arbitrary Tailwind values are reported without judgement: pixel-exact Tailwind needs them. Runs scored after the scroller fix leave out of clipped and overlapping text any blocks inside deliberate horizontal scrollers.`, ""];
+
+  const runLines = runsFound(results);
+
+  if (runLines.length > 0) lines.push("Runs found:", "", ...runLines, "");
 
   for (const { key: name, label, digits } of METRICS) {
     lines.push(`## ${label}`, "", `| Frame | ${tools.join(" | ")} |`, `| --- |${tools.map(() => " --- |").join("")}`);
@@ -110,10 +129,23 @@ export function renderReport({ frameIds, results, expectedRuns }) {
   return `${lines.join("\n")}\n`;
 }
 
+const COMPLETE_SECTIONS = ["visual", "design2code", "responsive", "maintainability"];
+
+// Reads every score file. Files that are not valid JSON or lack a section are skipped, so half-finished runs never break the report.
 export function loadResults(resultsDir) {
   if (!existsSync(resultsDir)) return [];
 
   return readdirSync(resultsDir, { withFileTypes: true }).flatMap((entry) =>
-    entry.isDirectory() ? readdirSync(join(resultsDir, entry.name)).filter((file) => file.endsWith(".json")).map((file) => JSON.parse(readFileSync(join(resultsDir, entry.name, file), "utf8"))) : [],
+    entry.isDirectory() ? readdirSync(join(resultsDir, entry.name)).filter((file) => file.endsWith(".json")).flatMap((file) => readScore(join(resultsDir, entry.name, file))) : [],
   );
+}
+
+function readScore(path) {
+  try {
+    const result = JSON.parse(readFileSync(path, "utf8"));
+
+    return COMPLETE_SECTIONS.every((section) => result[section]) ? [result] : [];
+  } catch {
+    return [];
+  }
 }

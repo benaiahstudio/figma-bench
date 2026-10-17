@@ -1,4 +1,4 @@
-// Runs inside the rendered page. Returns the text blocks (box, text, colour, clipped?) and the page width.
+// Runs inside the rendered page. Returns the text blocks (box, text, colour, clipped?, scroller?) and the page width.
 // A block is the text of one non-inline element, including text inside inline children such as <b> or <a>.
 export function extractDom() {
   const canvas = document.createElement("canvas");
@@ -29,6 +29,14 @@ export function extractDom() {
     }
 
     return null;
+  };
+  // Text inside a horizontal scroller (overflow-x auto/scroll) is meant to run past the edge.
+  const inScroller = (el) => {
+    for (let node = el; node && node !== document.body && node !== document.documentElement; node = node.parentElement) {
+      if (/^(auto|scroll)$/.test(getComputedStyle(node).overflowX)) return true;
+    }
+
+    return false;
   };
   const blocks = [];
 
@@ -63,10 +71,10 @@ export function extractDom() {
     const clipped = (bounds !== null && (left < bounds.left - 1 || right > bounds.right + 1 || top < bounds.top - 1 || bottom > bounds.bottom + 1)) || left < -1;
     const text = nodes.map((node) => node.textContent).join(" ").replace(/\s+/g, " ").trim();
 
-    blocks.push({ text, box: { x: left + scrollX, y: top + scrollY, w: right - left, h: bottom - top }, rgb: colour.rgb, alpha: colour.alpha, clipped });
+    blocks.push({ text, box: { x: left + scrollX, y: top + scrollY, w: right - left, h: bottom - top }, rgb: colour.rgb, alpha: colour.alpha, clipped, scroller: inScroller(el) });
   }
 
   const offenders = [...document.body.querySelectorAll("*")].filter((el) => el.getBoundingClientRect().right > innerWidth + 1).length;
 
-  return { viewportWidth: innerWidth, scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth), pageHeight: document.documentElement.scrollHeight, widerThanViewport: offenders, blocks };
+  return { viewportWidth: innerWidth, scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth), pageHeight: document.documentElement.scrollHeight, widerThanViewport: offenders, page: { href: location.href, title: document.title, text: document.body.innerText.slice(0, 600) }, blocks };
 }
